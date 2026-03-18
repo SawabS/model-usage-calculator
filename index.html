@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Model Cost Calculator — 墨</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Custom cursor -->
+    <div id="cursor-dot"></div>
+    <div id="cursor-ring"></div>
+    <div id="cursor-glow"></div>
+    <div id="cursor-glitter"></div>
+
+    <!-- Sakura petals -->
+    <div id="sakura-container"></div>
+
+    <!-- Background kanji watermark -->
+    <div class="kanji-watermark" aria-hidden="true">算</div>
+
+    <header>
+        <div class="header-inner">
+            <div class="logo">
+                <span class="logo-icon">
+                    <!-- Sakura Tree — Samurai Style -->
+                    <svg viewBox="0 0 48 48" width="42" height="42" fill="none">
+                        <defs>
+                            <linearGradient id="bark" x1="24" y1="46" x2="24" y2="18" gradientUnits="userSpaceOnUse">
+                                <stop offset="0%" stop-color="#4A3538"/>
+                                <stop offset="100%" stop-color="#6B4A4E"/>
+                            </linearGradient>
+                            <linearGradient id="bloom-top" x1="24" y1="2" x2="24" y2="18" gradientUnits="userSpaceOnUse">
+                                <stop offset="0%" stop-color="#E8B4B8" stop-opacity="0.9"/>
+                                <stop offset="100%" stop-color="#C23B52" stop-opacity="0.35"/>
+                            </linearGradient>
+                            <linearGradient id="bloom-side" x1="0" y1="18" x2="48" y2="24" gradientUnits="userSpaceOnUse">
+                                <stop offset="0%" stop-color="#E8B4B8" stop-opacity="0.8"/>
+                                <stop offset="50%" stop-color="#C23B52" stop-opacity="0.4"/>
+                                <stop offset="100%" stop-color="#E8B4B8" stop-opacity="0.8"/>
+                            </linearGradient>
+                            <filter id="soft"><feGaussianBlur stdDeviation="1" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                        </defs>
+                        <!-- Trunk — dark bark, organic curves -->
+                        <path d="M24 46 C24 46 23.2 38 22.5 33 C21.8 28 21 25.5 22 22.5 C23 19.5 23.5 18 24 15" stroke="url(#bark)" stroke-width="2.8" stroke-linecap="round"/>
+                        <path d="M24 46 C24.5 42 25.5 36 26 32 C26.5 28 27 26 26 23 C25 20 24.5 18 24 15" stroke="url(#bark)" stroke-width="1.5" stroke-linecap="round" opacity="0.4"/>
+                        <!-- Branches — angular, strong -->
+                        <path d="M22.5 31 C19.5 27.5 15 25.5 10 24" stroke="url(#bark)" stroke-width="1.6" stroke-linecap="round"/>
+                        <path d="M23 26.5 C20 23 15.5 21.5 11 20.5" stroke="url(#bark)" stroke-width="1.1" stroke-linecap="round" opacity="0.55"/>
+                        <path d="M25.5 30 C28.5 26.5 33 24.5 38 23" stroke="url(#bark)" stroke-width="1.6" stroke-linecap="round"/>
+                        <path d="M25 25.5 C28 22 32.5 20.5 37 19.5" stroke="url(#bark)" stroke-width="1.1" stroke-linecap="round" opacity="0.55"/>
+                        <path d="M23.5 21 C22 18.5 19.5 16 17 14" stroke="url(#bark)" stroke-width="1" stroke-linecap="round" opacity="0.45"/>
+                        <path d="M24.5 21 C26 18.5 28.5 16 31 14" stroke="url(#bark)" stroke-width="1" stroke-linecap="round" opacity="0.45"/>
+                        <!-- Blossom canopy -->
+                        <g filter="url(#soft)">
+                            <!-- Crown — whites and soft pinks -->
+                            <circle cx="24" cy="11" r="5.5" fill="url(#bloom-top)"/>
+                            <circle cx="18.5" cy="13.5" r="4.2" fill="#EDCACD" opacity="0.65"/>
+                            <circle cx="29.5" cy="13" r="4.2" fill="#EDCACD" opacity="0.65"/>
+                            <circle cx="24" cy="7" r="3.2" fill="#F2D8DA" opacity="0.55"/>
+                            <!-- Left cluster -->
+                            <circle cx="10.5" cy="22.5" r="4.2" fill="url(#bloom-side)" opacity="0.7"/>
+                            <circle cx="15" cy="20" r="3.2" fill="#EDCACD" opacity="0.55"/>
+                            <circle cx="8.5" cy="19.5" r="2.3" fill="#F2D8DA" opacity="0.4"/>
+                            <!-- Right cluster -->
+                            <circle cx="37.5" cy="21.5" r="4.2" fill="url(#bloom-side)" opacity="0.7"/>
+                            <circle cx="33" cy="19" r="3.2" fill="#EDCACD" opacity="0.55"/>
+                            <circle cx="39.5" cy="18.5" r="2.3" fill="#F2D8DA" opacity="0.4"/>
+                            <!-- Upper buds -->
+                            <circle cx="16" cy="12.5" r="2.2" fill="#E8B4B8" opacity="0.5"/>
+                            <circle cx="32" cy="12" r="2.2" fill="#E8B4B8" opacity="0.5"/>
+                        </g>
+                        <!-- Crimson accent blooms — deeper red centers -->
+                        <circle cx="24" cy="10" r="1.5" fill="#C23B52" opacity="0.45"/>
+                        <circle cx="11" cy="22" r="1.3" fill="#C23B52" opacity="0.35"/>
+                        <circle cx="37" cy="21" r="1.3" fill="#C23B52" opacity="0.35"/>
+                        <circle cx="19" cy="13" r="1" fill="#C23B52" opacity="0.3"/>
+                        <circle cx="29" cy="12.5" r="1" fill="#C23B52" opacity="0.3"/>
+                        <!-- Falling petals -->
+                        <ellipse cx="6" cy="13" rx="1.2" ry="0.8" transform="rotate(-20 6 13)" fill="#E8B4B8" opacity="0.35"/>
+                        <ellipse cx="42" cy="10" rx="1.1" ry="0.7" transform="rotate(15 42 10)" fill="#E8B4B8" opacity="0.3"/>
+                        <ellipse cx="5" cy="28" rx="1" ry="0.6" transform="rotate(-35 5 28)" fill="#EDCACD" opacity="0.25"/>
+                        <ellipse cx="43" cy="30" rx="0.9" ry="0.6" transform="rotate(25 43 30)" fill="#EDCACD" opacity="0.2"/>
+                    </svg>
+                </span>
+                <div class="logo-text">
+                    <h1>AI Cost Calculator</h1>
+                    <span class="logo-sub">Model Usage & Pricing Engine</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+                    <!-- Moon (dark mode indicator) -->
+                    <span class="theme-icon-dark">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="var(--washi)" opacity="0.15"/>
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                        </svg>
+                    </span>
+                    <!-- Sun (light mode indicator) -->
+                    <span class="theme-icon-light">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <circle cx="12" cy="12" r="5" fill="var(--shu)" opacity="0.2"/>
+                            <circle cx="12" cy="12" r="5"/>
+                            <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                            <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                        </svg>
+                    </span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- Controls Panel -->
+        <section class="panel controls-panel glass-card" id="controls-panel">
+            <div class="panel-header">
+                <h2><span class="accent-bar"></span>Parameters</h2>
+                <span class="panel-kanji">調</span>
+            </div>
+
+            <!-- Model Selector -->
+            <div class="control-group model-selector-group">
+                <label class="control-label"><svg class="param-icon" viewBox="0 0 20 20" width="14" height="14"><path d="M10 2L3 6v8l7 4 7-4V6l-7-4z" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M3 6l7 4m0 0l7-4M10 10v8" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.5"/></svg>Model Selection</label>
+                <div class="model-selector" id="model-selector">
+                    <div class="model-search-wrap">
+                        <input type="text" id="model-search" class="model-search" placeholder="Search models..." autocomplete="off">
+                        <span class="search-icon">⌕</span>
+                    </div>
+                    <div class="model-chips" id="selected-chips"></div>
+                    <div class="model-dropdown" id="model-dropdown"></div>
+                </div>
+            </div>
+
+            <!-- Custom Model -->
+            <div class="control-group custom-model-group">
+                <div class="custom-model-toggle">
+                    <label class="control-label"><svg class="param-icon" viewBox="0 0 20 20" width="14" height="14"><path d="M10 2a8 8 0 100 16 8 8 0 000-16z" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M10 6v8M6 10h8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Custom Model</label>
+                    <button class="toggle-btn" id="custom-toggle" aria-label="Toggle custom model">
+                        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                    </button>
+                </div>
+                <div class="custom-model-fields" id="custom-fields" style="display:none;">
+                    <input type="text" id="custom-name" class="glass-input" placeholder="Model name">
+                    <div class="custom-price-row">
+                        <div class="custom-price-field">
+                            <label>Input $/1M</label>
+                            <div class="custom-spinner-wrap">
+                                <input type="number" id="custom-input-price" class="glass-input spinner-input" placeholder="0.00" step="0.01" min="0">
+                                <div class="spinner-btns">
+                                    <button type="button" class="spinner-btn spinner-up" data-target="custom-input-price" data-step="0.01" aria-label="Increase">
+                                        <svg viewBox="0 0 10 6" width="10" height="6"><path d="M1 5l4-4 4 4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                    </button>
+                                    <button type="button" class="spinner-btn spinner-down" data-target="custom-input-price" data-step="0.01" aria-label="Decrease">
+                                        <svg viewBox="0 0 10 6" width="10" height="6"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="custom-price-field">
+                            <label>Output $/1M</label>
+                            <div class="custom-spinner-wrap">
+                                <input type="number" id="custom-output-price" class="glass-input spinner-input" placeholder="0.00" step="0.01" min="0">
+                                <div class="spinner-btns">
+                                    <button type="button" class="spinner-btn spinner-up" data-target="custom-output-price" data-step="0.01" aria-label="Increase">
+                                        <svg viewBox="0 0 10 6" width="10" height="6"><path d="M1 5l4-4 4 4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                    </button>
+                                    <button type="button" class="spinner-btn spinner-down" data-target="custom-output-price" data-step="0.01" aria-label="Decrease">
+                                        <svg viewBox="0 0 10 6" width="10" height="6"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn-add-custom" id="add-custom-btn">Add Custom Model</button>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Sliders -->
+            <div class="control-group">
+                <div class="slider-header">
+                    <label class="control-label" for="slider-users"><svg class="param-icon" viewBox="0 0 20 20" width="14" height="14"><circle cx="10" cy="6" r="3" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M3 18c0-4 3-7 7-7s7 3 7 7" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>Total Active Users</label>
+                    <input type="number" class="slider-value-input" id="input-users" value="1000" min="1" max="10000000">
+                </div>
+                <input type="range" class="slider" id="slider-users" min="1" max="100000" value="1000" step="1">
+                <div class="slider-range"><span>1</span><span>100K</span></div>
+            </div>
+
+            <div class="control-group">
+                <div class="slider-header">
+                    <label class="control-label" for="slider-active-pct"><svg class="param-icon" viewBox="0 0 20 20" width="14" height="14"><circle cx="10" cy="10" r="7.5" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M10 10V4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M10 10l4.5 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" opacity="0.7"/></svg>Daily Active %</label>
+                    <input type="number" class="slider-value-input" id="input-active-pct" value="25" min="1" max="100">
+                </div>
+                <input type="range" class="slider" id="slider-active-pct" min="1" max="100" value="25" step="1">
+                <div class="slider-range"><span>1%</span><span>100%</span></div>
+            </div>
+
+            <div class="control-group">
+                <div class="slider-header">
+                    <label class="control-label" for="slider-requests"><svg class="param-icon" viewBox="0 0 20 20" width="14" height="14"><path d="M4 4h12v10H8l-4 3v-3z" fill="none" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="9" r="0.8" fill="currentColor" opacity="0.6"/><circle cx="10" cy="9" r="0.8" fill="currentColor" opacity="0.6"/><circle cx="12" cy="9" r="0.8" fill="currentColor" opacity="0.6"/></svg>Requests / User / Day</label>
+                    <input type="number" class="slider-value-input" id="input-requests" value="6" min="1" max="500">
+                </div>
+                <input type="range" class="slider" id="slider-requests" min="1" max="200" value="6" step="1">
+                <div class="slider-range"><span>1</span><span>200</span></div>
+            </div>
+
+            <div class="control-group">
+                <div class="slider-header">
+                    <label class="control-label" for="slider-input-tokens"><svg class="param-icon" viewBox="0 0 20 20" width="14" height="14"><path d="M3 4h14M3 8h10M3 12h12M3 16h8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Avg Input Tokens / Req</label>
+                    <input type="number" class="slider-value-input" id="input-input-tokens" value="500" min="1" max="128000">
+                </div>
+                <input type="range" class="slider" id="slider-input-tokens" min="10" max="32000" value="500" step="10">
+                <div class="slider-range"><span>10</span><span>32K</span></div>
+            </div>
+
+            <div class="control-group">
+                <div class="slider-header">
+                    <label class="control-label" for="slider-output-tokens"><svg class="param-icon" viewBox="0 0 20 20" width="14" height="14"><path d="M3 4h14M3 8h14M3 12h14M3 16h14" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M15 3l2 2-2 2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.6"/></svg>Avg Output Tokens / Req</label>
+                    <input type="number" class="slider-value-input" id="input-output-tokens" value="300" min="1" max="128000">
+                </div>
+                <input type="range" class="slider" id="slider-output-tokens" min="10" max="16000" value="300" step="10">
+                <div class="slider-range"><span>10</span><span>16K</span></div>
+            </div>
+        </section>
+
+        <!-- Results Panel -->
+        <section class="panel results-panel">
+            <!-- Summary Cards -->
+            <div class="summary-row" id="summary-row">
+                <div class="summary-card glass-card" id="summary-daily">
+                    <span class="summary-label">Daily Cost</span>
+                    <span class="summary-value" id="val-daily">$0.00</span>
+                    <span class="summary-sub" id="sub-daily">0 requests</span>
+                </div>
+                <div class="summary-card glass-card" id="summary-monthly">
+                    <span class="summary-label">Monthly Cost</span>
+                    <span class="summary-value" id="val-monthly">$0.00</span>
+                    <span class="summary-sub" id="sub-monthly">30-day estimate</span>
+                </div>
+                <div class="summary-card glass-card" id="summary-annual">
+                    <span class="summary-label">Annual Cost</span>
+                    <span class="summary-value" id="val-annual">$0.00</span>
+                    <span class="summary-sub" id="sub-annual">365-day projection</span>
+                </div>
+                <div class="summary-card glass-card" id="summary-per-user">
+                    <span class="summary-label">Cost / User / Mo</span>
+                    <span class="summary-value" id="val-per-user">$0.00</span>
+                    <span class="summary-sub" id="sub-per-user">per active user</span>
+                </div>
+            </div>
+
+            <!-- Results Table -->
+            <div class="glass-card table-card" id="table-card">
+                <div class="panel-header">
+                    <h2><span class="accent-bar"></span>Cost Breakdown</h2>
+                    <span class="panel-kanji">表</span>
+                </div>
+                <div class="table-wrap">
+                    <table id="results-table">
+                        <thead>
+                            <tr>
+                                <th>Model</th>
+                                <th>Provider</th>
+                                <th>Input $/1M</th>
+                                <th>Output $/1M</th>
+                                <th>Daily Cost</th>
+                                <th>Monthly Cost</th>
+                                <th>Annual Cost</th>
+                                <th>Cost/User/Mo</th>
+                            </tr>
+                        </thead>
+                        <tbody id="results-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Chart -->
+            <div class="glass-card chart-card" id="chart-card">
+                <div class="panel-header">
+                    <h2><span class="accent-bar"></span>Visual Comparison</h2>
+                    <span class="panel-kanji">図</span>
+                </div>
+                <div class="chart-wrap">
+                    <canvas id="cost-chart"></canvas>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Parameter Guide -->
+    <section class="guide-section" id="guide-section">
+        <div class="guide-inner">
+            <div class="guide-header">
+                <h2><span class="accent-bar"></span>Parameter Guide</h2>
+                <span class="panel-kanji">解</span>
+            </div>
+            <div class="guide-grid">
+                <div class="guide-item">
+                    <div class="guide-item-icon">
+                        <svg viewBox="0 0 20 20" width="20" height="20"><path d="M10 2L3 6v8l7 4 7-4V6l-7-4z" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M3 6l7 4m0 0l7-4M10 10v8" fill="none" stroke="currentColor" stroke-width="1.1" opacity="0.5"/></svg>
+                    </div>
+                    <div class="guide-item-content">
+                        <h3>Model Selection</h3>
+                        <p>Choose one or more AI models to compare. Each model has different pricing for input and output tokens. Select multiple models to see a side-by-side cost comparison.</p>
+                    </div>
+                </div>
+                <div class="guide-item">
+                    <div class="guide-item-icon">
+                        <svg viewBox="0 0 20 20" width="20" height="20"><path d="M10 2a8 8 0 100 16 8 8 0 000-16z" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M10 6v8M6 10h8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+                    </div>
+                    <div class="guide-item-content">
+                        <h3>Custom Model</h3>
+                        <p>Add your own model with custom pricing. Useful for comparing private or fine-tuned models, or testing hypothetical pricing scenarios against standard offerings.</p>
+                    </div>
+                </div>
+                <div class="guide-item">
+                    <div class="guide-item-icon">
+                        <svg viewBox="0 0 20 20" width="20" height="20"><circle cx="10" cy="6" r="3" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M3 18c0-4 3-7 7-7s7 3 7 7" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>
+                    </div>
+                    <div class="guide-item-content">
+                        <h3>Total Active Users</h3>
+                        <p>The total number of registered users in your application. This is the base pool from which daily active users are calculated using the Daily Active % parameter.</p>
+                    </div>
+                </div>
+                <div class="guide-item">
+                    <div class="guide-item-icon">
+                        <svg viewBox="0 0 20 20" width="20" height="20"><circle cx="10" cy="10" r="7.5" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M10 10V4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M10 10l4.5 3" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" opacity="0.7"/></svg>
+                    </div>
+                    <div class="guide-item-content">
+                        <h3>Daily Active %</h3>
+                        <p>The percentage of total users who actively use the AI features each day. A 25% rate means 1 in 4 users makes at least one API request daily. Typical range: 10-40%.</p>
+                    </div>
+                </div>
+                <div class="guide-item">
+                    <div class="guide-item-icon">
+                        <svg viewBox="0 0 20 20" width="20" height="20"><path d="M4 4h12v10H8l-4 3v-3z" fill="none" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="9" r="0.8" fill="currentColor" opacity="0.6"/><circle cx="10" cy="9" r="0.8" fill="currentColor" opacity="0.6"/><circle cx="12" cy="9" r="0.8" fill="currentColor" opacity="0.6"/></svg>
+                    </div>
+                    <div class="guide-item-content">
+                        <h3>Requests / User / Day</h3>
+                        <p>How many API calls each active user makes per day. This includes every interaction that triggers a model inference &mdash; chat messages, completions, summarizations, etc.</p>
+                    </div>
+                </div>
+                <div class="guide-item">
+                    <div class="guide-item-icon">
+                        <svg viewBox="0 0 20 20" width="20" height="20"><path d="M3 4h14M3 8h10M3 12h12M3 16h8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+                    </div>
+                    <div class="guide-item-content">
+                        <h3>Avg Input Tokens / Request</h3>
+                        <p>The average number of tokens sent to the model per request. Includes system prompts, user messages, and context. 1 token &asymp; 4 characters or &frac34; of a word in English.</p>
+                    </div>
+                </div>
+                <div class="guide-item">
+                    <div class="guide-item-icon">
+                        <svg viewBox="0 0 20 20" width="20" height="20"><path d="M3 4h14M3 8h14M3 12h14M3 16h14" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M15 3l2 2-2 2" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" opacity="0.6"/></svg>
+                    </div>
+                    <div class="guide-item-content">
+                        <h3>Avg Output Tokens / Request</h3>
+                        <p>The average number of tokens the model generates per response. Longer, more detailed answers consume more output tokens. Output tokens are typically priced higher than input tokens.</p>
+                    </div>
+                </div>
+                <div class="guide-item">
+                    <div class="guide-item-icon">
+                        <svg viewBox="0 0 20 20" width="20" height="20"><path d="M2 15h16M5 15V7l3-4h4l3 4v8" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M8 15v-4h4v4" fill="none" stroke="currentColor" stroke-width="1.1"/></svg>
+                    </div>
+                    <div class="guide-item-content">
+                        <h3>Input &amp; Output $/1M Tokens</h3>
+                        <p>The cost charged by the provider per 1 million tokens processed. Input pricing covers your prompts; output pricing covers generated responses. These are the standard API rates.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-inner">
+            <span class="footer-kanji">終</span>
+            <span>Built by</span>
+            <a href="https://github.com/SawabS" target="_blank" rel="noopener noreferrer" class="footer-github">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+                SawabS
+            </a>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>

@@ -204,8 +204,8 @@ body.cursor-hover #cursor-ring {
 /* ===== Kanji Watermark ===== */
 .kanji-watermark {
     position: fixed;
-    right: -60px;
-    bottom: -80px;
+    right: -40px;
+    bottom: -60px;
     font-family: var(--font-display);
     font-size: 28rem;
     color: var(--watermark);
@@ -247,7 +247,7 @@ header {
     transition: transform 0.3s ease;
 }
 .logo-icon:hover {
-    transform: rotate(-8deg) scale(1.05);
+    transform: scale(1.2);
 }
 .logo-text h1 {
     font-family: var(--font-display);

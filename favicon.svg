@@ -1,24 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 44 44" fill="none">
     <style>
-        .s { stroke: #5BA8E0; }
+        .f { fill: #5BA8E0; }
         @media (prefers-color-scheme: light) {
-            .s { stroke: #E8600A; }
+            .f { fill: #E8600A; }
         }
     </style>
-    <!-- Shadow behind legs -->
-    <g opacity="0.25" transform="translate(-1.5, 1.5)">
-        <line x1="7" y1="38" x2="7" y2="7" stroke="black" stroke-width="4.5" stroke-linecap="square"/>
-        <line x1="37" y1="38" x2="37" y2="7" stroke="black" stroke-width="4.5" stroke-linecap="square"/>
-        <line x1="7" y1="7" x2="22" y2="26" stroke="black" stroke-width="2.2" stroke-linecap="round"/>
-        <line x1="22" y1="26" x2="37" y2="7" stroke="black" stroke-width="2.2" stroke-linecap="round"/>
+    <defs>
+        <path id="sp" d="M24 20 C17 14 13 7 17 4 L22 7 L27 4 C31 8 27 16 24 20Z"/>
+    </defs>
+    <g class="f">
+        <use href="#sp" transform="rotate(0, 22, 22)"/>
+        <use href="#sp" transform="rotate(72, 22, 22)"/>
+        <use href="#sp" transform="rotate(144, 22, 22)"/>
+        <use href="#sp" transform="rotate(216, 22, 22)"/>
+        <use href="#sp" transform="rotate(288, 22, 22)"/>
     </g>
-    <!-- Left blade -->
-    <line x1="7" y1="38" x2="7" y2="7" class="s" stroke-width="4.5" stroke-linecap="square"/>
-    <!-- Right blade -->
-    <line x1="37" y1="38" x2="37" y2="7" class="s" stroke-width="4.5" stroke-linecap="square"/>
-    <!-- Connecting ridge -->
-    <line x1="7" y1="7" x2="22" y2="26" class="s" stroke-width="2.2" stroke-linecap="round"/>
-    <line x1="22" y1="26" x2="37" y2="7" class="s" stroke-width="2.2" stroke-linecap="round"/>
-    <!-- Edge gleam -->
-    <line x1="5.2" y1="37" x2="5.2" y2="8" stroke="rgba(255,255,255,0.2)" stroke-width="0.6" stroke-linecap="round"/>
 </svg>

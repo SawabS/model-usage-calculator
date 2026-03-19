@@ -27,29 +27,31 @@
         <div class="header-inner">
             <div class="logo">
                 <span class="logo-icon">
-                    <!-- M — clean katana blade silhouette -->
+                    <!-- Sakura pinwheel -->
                     <svg viewBox="0 0 44 44" width="40" height="40" fill="none">
                         <defs>
-                            <linearGradient id="mg" x1="0" y1="38" x2="0" y2="6" gradientUnits="userSpaceOnUse">
-                                <stop offset="0%"  stop-color="var(--shu)" stop-opacity="0.45"/>
-                                <stop offset="55%" stop-color="var(--shu)"/>
-                                <stop offset="100%" stop-color="var(--gold)" stop-opacity="0.85"/>
-                            </linearGradient>
-                            <filter id="ms" x="-25%" y="-10%" width="150%" height="130%">
-                                <feDropShadow dx="-1.5" dy="1.5" stdDeviation="1.8" flood-opacity="0.25"/>
+                            <filter id="ms" x="-20%" y="-12%" width="145%" height="130%">
+                                <feDropShadow dx="-0.5" dy="1" stdDeviation="1.2" flood-opacity="0.18"/>
                             </filter>
+                            <path id="sp" d="M24 20 C17 14 13 7 17 4 L22 7 L27 4 C31 8 27 16 24 20Z"/>
+                            <path id="si" d="M24 20 C21 17 18 12 18 8"/>
                         </defs>
                         <g filter="url(#ms)">
-                            <!-- Left blade (tapered katana) -->
-                            <path d="M5 38 L5.8 7 L8.2 7 L9 38Z" fill="url(#mg)"/>
-                            <!-- Right blade (tapered katana) -->
-                            <path d="M35 38 L35.8 7 L38.2 7 L39 38Z" fill="url(#mg)"/>
-                            <!-- Connecting ridge -->
-                            <line x1="7" y1="7.5" x2="22" y2="26" stroke="url(#mg)" stroke-width="2" stroke-linecap="round"/>
-                            <line x1="22" y1="26" x2="37" y2="7.5" stroke="url(#mg)" stroke-width="2" stroke-linecap="round"/>
+                            <g fill="var(--shu)">
+                                <use href="#sp" transform="rotate(0, 22, 22)"/>
+                                <use href="#sp" transform="rotate(72, 22, 22)"/>
+                                <use href="#sp" transform="rotate(144, 22, 22)"/>
+                                <use href="#sp" transform="rotate(216, 22, 22)"/>
+                                <use href="#sp" transform="rotate(288, 22, 22)"/>
+                            </g>
+                            <g stroke="var(--gold)" stroke-width="0.6" fill="none" opacity="0.3">
+                                <use href="#si" transform="rotate(0, 22, 22)"/>
+                                <use href="#si" transform="rotate(72, 22, 22)"/>
+                                <use href="#si" transform="rotate(144, 22, 22)"/>
+                                <use href="#si" transform="rotate(216, 22, 22)"/>
+                                <use href="#si" transform="rotate(288, 22, 22)"/>
+                            </g>
                         </g>
-                        <!-- Steel edge gleam -->
-                        <line x1="5.3" y1="37" x2="5.9" y2="8" stroke="rgba(255,255,255,0.22)" stroke-width="0.5" stroke-linecap="round"/>
                     </svg>
                 </span>
                 <div class="logo-text">

@@ -354,6 +354,9 @@ function initTheme() {
             chartInstance = null;
         }
         renderAll();
+        // Clear leaves so new ones spawn with the correct theme palette
+        const lc = $('#leaves-container');
+        if (lc) lc.innerHTML = '';
     });
 }
 

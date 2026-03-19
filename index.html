@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0A0E16" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#FAFAF8" media="(prefers-color-scheme: light)">
     <title>AI Model Cost Calculator</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -25,77 +27,29 @@
         <div class="header-inner">
             <div class="logo">
                 <span class="logo-icon">
-                    <!-- M — glassy 3D, varying weight -->
+                    <!-- M — clean katana blade silhouette -->
                     <svg viewBox="0 0 44 44" width="40" height="40" fill="none">
                         <defs>
-                            <!-- Main face gradient: dim at base, bright at peaks -->
-                            <linearGradient id="mg" x1="7" y1="39" x2="37" y2="8" gradientUnits="userSpaceOnUse">
-                                <stop offset="0%"   stop-color="var(--shu)"   stop-opacity="0.5"/>
-                                <stop offset="50%"  stop-color="var(--gold)"  stop-opacity="1"/>
-                                <stop offset="100%" stop-color="var(--washi)" stop-opacity="0.95"/>
+                            <linearGradient id="mg" x1="0" y1="38" x2="0" y2="6" gradientUnits="userSpaceOnUse">
+                                <stop offset="0%"  stop-color="var(--shu)" stop-opacity="0.45"/>
+                                <stop offset="55%" stop-color="var(--shu)"/>
+                                <stop offset="100%" stop-color="var(--gold)" stop-opacity="0.85"/>
                             </linearGradient>
-                            <!-- Glass highlight gradient: bright left edge -->
-                            <linearGradient id="mh" x1="0" y1="0" x2="1" y2="0">
-                                <stop offset="0%"   stop-color="rgba(255,255,255,0.55)"/>
-                                <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
-                            </linearGradient>
-                            <!-- Soft glow behind the letter -->
-                            <filter id="mglow" x="-50%" y="-50%" width="200%" height="200%">
-                                <feGaussianBlur stdDeviation="2.8" result="b"/>
-                                <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-                            </filter>
-                            <!-- Inner specular shimmer -->
-                            <filter id="msharp" x="-10%" y="-10%" width="120%" height="120%">
-                                <feGaussianBlur stdDeviation="0.4" result="b"/>
-                                <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+                            <filter id="ms" x="-25%" y="-10%" width="150%" height="130%">
+                                <feDropShadow dx="-1.5" dy="1.5" stdDeviation="1.8" flood-opacity="0.25"/>
                             </filter>
                         </defs>
-
-                        <!-- Layer 1: ambient glow bloom -->
-                        <path d="M 7 39 L 7 9 L 22 27 L 37 9 L 37 39"
-                              stroke="var(--shu)" stroke-width="11"
-                              stroke-linecap="square" stroke-linejoin="miter"
-                              fill="none" opacity="0.09" filter="url(#mglow)"/>
-
-                        <!-- Layer 2: extruded depth shadow (offset down-right) -->
-                        <path d="M 8.8 40 L 8.8 10.5 L 23.8 28.5 L 38.8 10.5 L 38.8 40"
-                              stroke="rgba(0,0,0,0.32)" stroke-width="6"
-                              stroke-linecap="square" stroke-linejoin="miter" stroke-miterlimit="16"
-                              fill="none"/>
-
-                        <!-- Layer 3a: thick vertical strokes (the "legs") -->
-                        <line x1="7" y1="39.5" x2="7" y2="8.5"
-                              stroke="url(#mg)" stroke-width="6" stroke-linecap="square"/>
-                        <line x1="37" y1="39.5" x2="37" y2="8.5"
-                              stroke="url(#mg)" stroke-width="6" stroke-linecap="square"/>
-
-                        <!-- Layer 3b: thinner diagonals (the "V" notch) -->
-                        <line x1="7.5" y1="9.5" x2="22" y2="27"
-                              stroke="url(#mg)" stroke-width="2.8" stroke-linecap="round"/>
-                        <line x1="22" y1="27" x2="36.5" y2="9.5"
-                              stroke="url(#mg)" stroke-width="2.8" stroke-linecap="round"/>
-
-                        <!-- Layer 4: left-edge glass highlight on verticals -->
-                        <line x1="5" y1="39.5" x2="5" y2="8.5"
-                              stroke="rgba(255,255,255,0.32)" stroke-width="0.8" stroke-linecap="square"/>
-                        <line x1="35" y1="39.5" x2="35" y2="8.5"
-                              stroke="rgba(255,255,255,0.16)" stroke-width="0.8" stroke-linecap="square"/>
-
-                        <!-- Layer 5: specular glint at peaks -->
-                        <line x1="4.5" y1="8.5" x2="9.5" y2="8.5"
-                              stroke="rgba(255,255,255,0.7)" stroke-width="1.2" stroke-linecap="square" filter="url(#msharp)"/>
-                        <line x1="34.5" y1="8.5" x2="39.5" y2="8.5"
-                              stroke="rgba(255,255,255,0.7)" stroke-width="1.2" stroke-linecap="square" filter="url(#msharp)"/>
-
-                        <!-- Layer 6: tsuba crosspiece (blade guard accent) -->
-                        <line x1="3.5" y1="8.5" x2="10.5" y2="8.5"
-                              stroke="var(--gold)" stroke-width="1.8" stroke-linecap="square" opacity="0.85"/>
-                        <line x1="33.5" y1="8.5" x2="40.5" y2="8.5"
-                              stroke="var(--gold)" stroke-width="1.8" stroke-linecap="square" opacity="0.85"/>
-
-                        <!-- Ground line -->
-                        <line x1="4" y1="40.5" x2="40" y2="40.5"
-                              stroke="currentColor" stroke-width="0.7" opacity="0.1"/>
+                        <g filter="url(#ms)">
+                            <!-- Left blade (tapered katana) -->
+                            <path d="M5 38 L5.8 7 L8.2 7 L9 38Z" fill="url(#mg)"/>
+                            <!-- Right blade (tapered katana) -->
+                            <path d="M35 38 L35.8 7 L38.2 7 L39 38Z" fill="url(#mg)"/>
+                            <!-- Connecting ridge -->
+                            <line x1="7" y1="7.5" x2="22" y2="26" stroke="url(#mg)" stroke-width="2" stroke-linecap="round"/>
+                            <line x1="22" y1="26" x2="37" y2="7.5" stroke="url(#mg)" stroke-width="2" stroke-linecap="round"/>
+                        </g>
+                        <!-- Steel edge gleam -->
+                        <line x1="5.3" y1="37" x2="5.9" y2="8" stroke="rgba(255,255,255,0.22)" stroke-width="0.5" stroke-linecap="round"/>
                     </svg>
                 </span>
                 <div class="logo-text">

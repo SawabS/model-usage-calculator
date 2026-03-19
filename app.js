@@ -501,7 +501,6 @@ const PARAM_TOOLTIPS = {
 };
 
 function initTooltips() {
-    // Create the shared tooltip element
     const tooltip = document.createElement('div');
     tooltip.className = 'tooltip-card';
     tooltip.innerHTML = '<div class="tooltip-title"></div><div class="tooltip-body"></div>';
@@ -510,58 +509,71 @@ function initTooltips() {
     const bodyEl = tooltip.querySelector('.tooltip-body');
     let hideTimeout;
 
+    function showTooltipFor(label, match) {
+        clearTimeout(hideTimeout);
+        titleEl.textContent = match;
+        bodyEl.textContent = PARAM_TOOLTIPS[match];
+
+        const rect = label.getBoundingClientRect();
+        const tooltipW = Math.min(280, window.innerWidth - 24);
+        let left = rect.left + rect.width / 2 - tooltipW / 2;
+        left = Math.max(12, Math.min(left, window.innerWidth - tooltipW - 12));
+
+        tooltip.style.maxWidth = tooltipW + 'px';
+        tooltip.style.left = left + 'px';
+
+        if (rect.top > 200) {
+            tooltip.classList.remove('tooltip-below');
+            tooltip.classList.add('tooltip-above');
+            tooltip.style.top = (rect.top - 10) + 'px';
+            tooltip.style.transform = '';
+            requestAnimationFrame(() => {
+                const th = tooltip.offsetHeight;
+                tooltip.style.top = (rect.top - th - 10) + 'px';
+                tooltip.classList.add('visible');
+            });
+        } else {
+            tooltip.classList.remove('tooltip-above');
+            tooltip.classList.add('tooltip-below');
+            tooltip.style.top = (rect.bottom + 10) + 'px';
+            tooltip.style.transform = '';
+            requestAnimationFrame(() => {
+                tooltip.classList.add('visible');
+            });
+        }
+    }
+
     $$('.control-label').forEach(label => {
-        // Extract text without SVG content
         const text = label.textContent.trim();
         const match = Object.keys(PARAM_TOOLTIPS).find(k => text.includes(k));
         if (!match) return;
 
         label.setAttribute('data-has-tooltip', '');
 
-        label.addEventListener('mouseenter', (e) => {
-            clearTimeout(hideTimeout);
-            titleEl.textContent = match;
-            bodyEl.textContent = PARAM_TOOLTIPS[match];
-
-            // Position the tooltip
-            const rect = label.getBoundingClientRect();
-            const tooltipW = 280;
-            let left = rect.left + rect.width / 2 - tooltipW / 2;
-            left = Math.max(12, Math.min(left, window.innerWidth - tooltipW - 12));
-
-            // Prefer showing above; if not enough room, show below
-            tooltip.style.maxWidth = tooltipW + 'px';
-            tooltip.style.left = left + 'px';
-
-            if (rect.top > 200) {
-                // Show above
-                tooltip.classList.remove('tooltip-below');
-                tooltip.classList.add('tooltip-above');
-                tooltip.style.top = (rect.top - 10) + 'px';
-                tooltip.style.transform = '';
-                // Measure and adjust after making visible
-                requestAnimationFrame(() => {
-                    const th = tooltip.offsetHeight;
-                    tooltip.style.top = (rect.top - th - 10) + 'px';
-                    tooltip.classList.add('visible');
-                });
-            } else {
-                // Show below
-                tooltip.classList.remove('tooltip-above');
-                tooltip.classList.add('tooltip-below');
-                tooltip.style.top = (rect.bottom + 10) + 'px';
-                tooltip.style.transform = '';
-                requestAnimationFrame(() => {
-                    tooltip.classList.add('visible');
-                });
-            }
-        });
+        label.addEventListener('mouseenter', () => showTooltipFor(label, match));
 
         label.addEventListener('mouseleave', () => {
             hideTimeout = setTimeout(() => {
                 tooltip.classList.remove('visible');
             }, 120);
         });
+
+        // Touch support — tap to toggle tooltip
+        label.addEventListener('touchstart', (e) => {
+            if (tooltip.classList.contains('visible') && titleEl.textContent === match) {
+                tooltip.classList.remove('visible');
+                return;
+            }
+            e.preventDefault();
+            showTooltipFor(label, match);
+        }, { passive: false });
+    });
+
+    // Dismiss tooltip on tap outside
+    document.addEventListener('touchstart', (e) => {
+        if (!e.target.closest('[data-has-tooltip]') && !e.target.closest('.tooltip-card')) {
+            tooltip.classList.remove('visible');
+        }
     });
 }
 

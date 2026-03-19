@@ -167,6 +167,12 @@ function renderSummary(totals, first) {
     $('#val-per-user').textContent = state.users > 0 ? fmt(totals.monthly / state.users) : '$0.00';
     $('#sub-daily').textContent = fmtNum(Math.round(first.totalReqs)) + ' requests/day';
     $('#sub-per-user').textContent = fmtNum(Math.round(first.dau)) + ' active users';
+    // Pulse animation on value change
+    $$('.summary-value').forEach(el => {
+        el.classList.remove('value-pulse');
+        void el.offsetWidth;
+        el.classList.add('value-pulse');
+    });
 }
 
 // ─── Theme-aware chart colors ───
@@ -325,7 +331,11 @@ function bindSlider(key, sliderId, inputId) {
 
 function fillSlider(slider) {
     const pct = ((slider.value - slider.min) / (slider.max - slider.min)) * 100;
-    slider.style.background = `linear-gradient(to right, var(--shu) 0%, var(--shu) ${pct}%, var(--slider-track) ${pct}%)`;
+    // Intensity gradient: dimmer at low values, full accent at high values
+    slider.style.background = `linear-gradient(to right, var(--slider-fill-start) 0%, var(--shu) ${pct}%, var(--slider-track) ${pct}%)`;
+    // Glow intensifies with slider value
+    const glowSize = Math.round(pct / 12);
+    slider.style.filter = glowSize > 1 ? `drop-shadow(0 0 ${glowSize}px var(--shu-glow))` : 'none';
 }
 
 // ─── Theme Toggle ───
@@ -347,81 +357,56 @@ function initTheme() {
     });
 }
 
-// ─── Custom Cursor with Glitter ───
-function initCursor() {
-    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-    if (isTouchDevice) return;
-    const dot = dom.cursorDot, ring = dom.cursorRing, glow = dom.cursorGlow;
-    const glitterContainer = $('#cursor-glitter');
-    let mx = -100, my = -100;
-    let rx = -100, ry = -100;
-    let gx = -100, gy = -100;
-    let lastGlitterTime = 0;
-    let lastGx = -100, lastGy = -100;
+// ─── Cursor Glitter ───
+function initCursorTrail() {
+    if (window.matchMedia('(hover: none)').matches) return;
+    const canvas = document.getElementById('cursor-trail');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
 
-    function getGlitterColor() {
-        const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-        // Sakura palette hues: pinks (330-345), mauves (310-320), warm rose (350-360)
-        const hues = isLight ? [330, 335, 340, 345, 315] : [330, 338, 345, 350, 318];
-        const h = hues[Math.floor(Math.random() * hues.length)];
-        const s = 40 + Math.random() * 35;
-        const l = isLight ? (55 + Math.random() * 20) : (70 + Math.random() * 20);
-        return `hsl(${h}, ${s}%, ${l}%)`;
-    }
-
-    function spawnGlitter(x, y) {
-        const el = document.createElement('div');
-        el.className = 'glitter-particle';
-        const size = 2 + Math.random() * 3;
-        el.style.width = size + 'px';
-        el.style.height = size + 'px';
-        el.style.left = x + 'px';
-        el.style.top = y + 'px';
-        el.style.background = getGlitterColor();
-        el.style.boxShadow = `0 0 ${size + 2}px ${getGlitterColor()}`;
-
-        const dx = (Math.random() - 0.5) * 40;
-        const dy = (Math.random() - 0.5) * 40 - 15;
-        const dur = 400 + Math.random() * 500;
-
-        glitterContainer.appendChild(el);
-        const anim = el.animate([
-            { transform: 'translate(0, 0) scale(1)', opacity: 0.8 },
-            { transform: `translate(${dx}px, ${dy}px) scale(0)`, opacity: 0 }
-        ], { duration: dur, easing: 'ease-out', fill: 'forwards' });
-        anim.onfinish = () => el.remove();
-    }
-
-    document.addEventListener('mousemove', (e) => {
-        mx = e.clientX;
-        my = e.clientY;
-        dot.style.transform = `translate(${mx - 3}px, ${my - 3}px)`;
-
-        // Glitter: spawn when cursor moves enough
-        const now = performance.now();
-        const dist = Math.hypot(mx - lastGx, my - lastGy);
-        if (now - lastGlitterTime > 50 && dist > 8) {
-            spawnGlitter(mx + (Math.random() - 0.5) * 6, my + (Math.random() - 0.5) * 6);
-            lastGlitterTime = now;
-            lastGx = mx;
-            lastGy = my;
-        }
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    window.addEventListener('resize', () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
     });
 
-    function animateCursor() {
-        rx += (mx - rx) * 0.12;
-        ry += (my - ry) * 0.12;
-        gx += (mx - gx) * 0.06;
-        gy += (my - gy) * 0.06;
-        ring.style.transform = `translate(${rx - 16}px, ${ry - 16}px)`;
-        glow.style.transform = `translate(${gx - 50}px, ${gy - 50}px)`;
-        requestAnimationFrame(animateCursor);
-    }
-    animateCursor();
+    const particles = [];
 
-    const interSel = 'button, a, input, .dropdown-item, .chip-remove, .slider, .toggle-btn';
-    document.addEventListener('mouseover', e => { if (e.target.closest(interSel)) document.body.classList.add('cursor-hover'); });
-    document.addEventListener('mouseout', e => { if (e.target.closest(interSel)) document.body.classList.remove('cursor-hover'); });
+    function rgb() {
+        return document.documentElement.getAttribute('data-theme') === 'light'
+            ? '232, 96, 10' : '91, 168, 224';
+    }
+
+    document.addEventListener('mousemove', e => {
+        if (Math.random() > 0.12) return; // spawn ~12% of events — very sparse
+        particles.push({
+            x: e.clientX + (Math.random() - 0.5) * 14,
+            y: e.clientY + (Math.random() - 0.5) * 14,
+            r: 1.2 + Math.random() * 1.6,
+            vx: (Math.random() - 0.5) * 0.15,
+            vy: (Math.random() - 0.5) * 0.12 - 0.07, // barely drifting upward
+            life: 1,
+            decay: 0.007 + Math.random() * 0.005, // very slow fade
+        });
+    });
+
+    (function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const c = rgb();
+        for (let i = particles.length - 1; i >= 0; i--) {
+            const p = particles[i];
+            p.x += p.vx;
+            p.y += p.vy;
+            p.life -= p.decay;
+            if (p.life <= 0) { particles.splice(i, 1); continue; }
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r * p.life, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(${c}, ${p.life * p.life * 0.38})`;
+            ctx.fill();
+        }
+        requestAnimationFrame(draw);
+    })();
 }
 
 // ─── Glass Lighting ───
@@ -435,51 +420,149 @@ function initGlassLighting() {
     });
 }
 
-// ─── Sakura Petals ───
-function initSakura() {
-    const container = $('#sakura-container');
+// ─── Falling Leaves — tilted diagonal sliding ───
+function initLeaves() {
+    const container = $('#leaves-container');
     if (!container) return;
 
-    function createPetal() {
+    function createLeaf() {
         const el = document.createElement('div');
-        el.className = 'sakura-petal';
-        const size = 14 + Math.random() * 20;
-        const x = Math.random() * window.innerWidth;
-        const duration = 14000 + Math.random() * 18000;
-        const drift = -120 + Math.random() * 240;
-        const rot = Math.random() * 540 - 270;
+        el.className = 'leaf';
+        const size = 16 + Math.random() * 22;
 
-        // Vary hue around pink — more visible
-        const h = 335 + Math.random() * 25;
-        const s = 65 + Math.random() * 25;
-        const l = 70 + Math.random() * 14;
-        const op = 0.22 + Math.random() * 0.25;
+        // Determine direction: slide from left-to-right or right-to-left
+        const fromLeft = Math.random() > 0.5;
+        const startX = fromLeft ? -(20 + Math.random() * 60) : window.innerWidth + 20 + Math.random() * 60;
+        const startY = -(20 + Math.random() * (window.innerHeight * 0.25));
 
-        el.style.cssText = `left:${x}px;top:-30px;`;
-        el.innerHTML = `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="hsl(${h},${s}%,${l}%)">
-            <path d="M12 2C9 6 4 8 4 12c0 3 2 6 5 7.5C10 17 11 14 12 12c1 2 2 5 3 7.5c3-1.5 5-4.5 5-7.5c0-4-5-6-8-10z" opacity="${op}"/>
+        const duration = 13000 + Math.random() * 16000;
+        const rot = Math.random() * 720 - 360;
+
+        // Theme-aware leaf palette
+        const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+        const palettes = isLight ? [
+            // Light theme: warm oranges, amber, burnt sienna
+            { h: 18 + Math.random() * 22, s: 65 + Math.random() * 25, l: 50 + Math.random() * 20 },
+            { h: 35 + Math.random() * 15, s: 55 + Math.random() * 30, l: 55 + Math.random() * 18 },
+            { h: 8 + Math.random() * 10, s: 50 + Math.random() * 25, l: 45 + Math.random() * 20 },
+        ] : [
+            // Dark theme: icy blues, frost whites, pale lavenders
+            { h: 200 + Math.random() * 20, s: 40 + Math.random() * 35, l: 65 + Math.random() * 20 },
+            { h: 210 + Math.random() * 15, s: 25 + Math.random() * 30, l: 75 + Math.random() * 15 },
+            { h: 230 + Math.random() * 20, s: 30 + Math.random() * 25, l: 70 + Math.random() * 18 },
+        ];
+        const p = palettes[Math.floor(Math.random() * palettes.length)];
+        const op = 0.18 + Math.random() * 0.22;
+
+        el.style.cssText = `left:${startX}px;top:${startY}px;`;
+
+        // Leaf SVG — elongated natural shape
+        el.innerHTML = `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="hsl(${p.h},${p.s}%,${p.l}%)">
+            <path d="M12 1C8 5 3 10 3 15c0 3 3 5.5 5 7C9 18.5 10.5 14 12 10.5c1.5 3.5 3 8 4 11.5 2-1.5 5-4 5-7 0-5-5-10-9-14z" opacity="${op}"/>
         </svg>`;
 
         const vh = window.innerHeight;
+        const vw = window.innerWidth;
+        // Diagonal travel distance
+        const travelX = fromLeft ? (vw * (0.55 + Math.random() * 0.55)) : -(vw * (0.55 + Math.random() * 0.55));
+        const travelY = vh + 80;
+
         const anim = el.animate([
-            { transform: `translate(0, 0) rotate(0deg) scale(0.4)`, opacity: 0 },
-            { transform: `translate(${drift * 0.2}px, ${vh * 0.12}px) rotate(${rot * 0.15}deg) scale(1)`, opacity: op, offset: 0.08 },
-            { transform: `translate(${drift * 0.4}px, ${vh * 0.35}px) rotate(${rot * 0.4}deg) scale(0.95)`, opacity: op, offset: 0.35 },
-            { transform: `translate(${drift * 0.7}px, ${vh * 0.65}px) rotate(${rot * 0.7}deg) scale(0.85)`, opacity: op * 0.8, offset: 0.65 },
-            { transform: `translate(${drift}px, ${vh + 40}px) rotate(${rot}deg) scale(0.5)`, opacity: 0 },
+            { transform: `translate(0, 0) rotate(0deg) scale(0.3)`, opacity: 0 },
+            { transform: `translate(${travelX * 0.12}px, ${travelY * 0.08}px) rotate(${rot * 0.1}deg) scale(1)`, opacity: op, offset: 0.06 },
+            { transform: `translate(${travelX * 0.35}px, ${travelY * 0.3}px) rotate(${rot * 0.35}deg) scale(0.95)`, opacity: op, offset: 0.3 },
+            { transform: `translate(${travelX * 0.6}px, ${travelY * 0.55}px) rotate(${rot * 0.6}deg) scale(0.88)`, opacity: op * 0.85, offset: 0.55 },
+            { transform: `translate(${travelX * 0.82}px, ${travelY * 0.78}px) rotate(${rot * 0.82}deg) scale(0.7)`, opacity: op * 0.5, offset: 0.78 },
+            { transform: `translate(${travelX}px, ${travelY}px) rotate(${rot}deg) scale(0.4)`, opacity: 0 },
         ], { duration, easing: 'ease-in-out', fill: 'forwards' });
 
         container.appendChild(el);
         anim.onfinish = () => el.remove();
     }
 
-    // Initial burst — slower stagger
-    for (let i = 0; i < 10; i++) setTimeout(createPetal, i * 600);
+    // Initial burst — more leaves
+    for (let i = 0; i < 14; i++) setTimeout(createLeaf, i * 500);
 
-    // Continuous gentle flow — slower spawn rate
+    // Continuous gentle flow — higher density
     setInterval(() => {
-        if (container.childElementCount < 22) createPetal();
-    }, 1800);
+        if (container.childElementCount < 28) createLeaf();
+    }, 1500);
+}
+
+// ─── Parameter Tooltips ───
+const PARAM_TOOLTIPS = {
+    'Model Selection': 'Choose one or more AI models to compare. Each model has unique pricing for input and output tokens. Select multiple for side-by-side comparison.',
+    'Custom Model': 'Add your own model with custom pricing. Useful for comparing private, fine-tuned, or hypothetical pricing scenarios.',
+    'Total Active Users': 'Total registered users in your application. Daily active users are calculated from this base using the Daily Active % parameter.',
+    'Daily Active %': 'Percentage of users who use AI features daily. 25% means 1 in 4 users makes at least one API request per day. Typical range: 10\u201340%.',
+    'Requests / User / Day': 'How many API calls each active user makes daily \u2014 chat messages, completions, summarizations, and any model inference.',
+    'Avg Input Tokens / Req': 'Tokens sent to the model per request, including system prompts and context. 1 token \u2248 4 characters in English.',
+    'Avg Output Tokens / Req': 'Tokens the model generates per response. Longer answers use more. Output tokens are typically priced higher than input.',
+};
+
+function initTooltips() {
+    // Create the shared tooltip element
+    const tooltip = document.createElement('div');
+    tooltip.className = 'tooltip-card';
+    tooltip.innerHTML = '<div class="tooltip-title"></div><div class="tooltip-body"></div>';
+    document.body.appendChild(tooltip);
+    const titleEl = tooltip.querySelector('.tooltip-title');
+    const bodyEl = tooltip.querySelector('.tooltip-body');
+    let hideTimeout;
+
+    $$('.control-label').forEach(label => {
+        // Extract text without SVG content
+        const text = label.textContent.trim();
+        const match = Object.keys(PARAM_TOOLTIPS).find(k => text.includes(k));
+        if (!match) return;
+
+        label.setAttribute('data-has-tooltip', '');
+
+        label.addEventListener('mouseenter', (e) => {
+            clearTimeout(hideTimeout);
+            titleEl.textContent = match;
+            bodyEl.textContent = PARAM_TOOLTIPS[match];
+
+            // Position the tooltip
+            const rect = label.getBoundingClientRect();
+            const tooltipW = 280;
+            let left = rect.left + rect.width / 2 - tooltipW / 2;
+            left = Math.max(12, Math.min(left, window.innerWidth - tooltipW - 12));
+
+            // Prefer showing above; if not enough room, show below
+            tooltip.style.maxWidth = tooltipW + 'px';
+            tooltip.style.left = left + 'px';
+
+            if (rect.top > 200) {
+                // Show above
+                tooltip.classList.remove('tooltip-below');
+                tooltip.classList.add('tooltip-above');
+                tooltip.style.top = (rect.top - 10) + 'px';
+                tooltip.style.transform = '';
+                // Measure and adjust after making visible
+                requestAnimationFrame(() => {
+                    const th = tooltip.offsetHeight;
+                    tooltip.style.top = (rect.top - th - 10) + 'px';
+                    tooltip.classList.add('visible');
+                });
+            } else {
+                // Show below
+                tooltip.classList.remove('tooltip-above');
+                tooltip.classList.add('tooltip-below');
+                tooltip.style.top = (rect.bottom + 10) + 'px';
+                tooltip.style.transform = '';
+                requestAnimationFrame(() => {
+                    tooltip.classList.add('visible');
+                });
+            }
+        });
+
+        label.addEventListener('mouseleave', () => {
+            hideTimeout = setTimeout(() => {
+                tooltip.classList.remove('visible');
+            }, 120);
+        });
+    });
 }
 
 // ─── Custom Model ───
@@ -583,25 +666,23 @@ function init() {
         customOutput: $('#custom-output-price'),
         addCustom:    $('#add-custom-btn'),
         resultsBody:  $('#results-body'),
-        cursorDot:    $('#cursor-dot'),
-        cursorRing:   $('#cursor-ring'),
-        cursorGlow:   $('#cursor-glow'),
     };
 
     // Default: pin Gemini 3.1 Flash-Lite as selected
     const pinned = MODEL_DB.find(m => m.model === PINNED_MODEL);
     if (pinned) state.selectedModels.push({ ...pinned });
 
+    initTheme(); // Must run before renderAll so chart reads correct CSS vars
     renderChips();
     buildDropdown('');
     renderAll();
     initEvents();
-    initTheme();
-    initCursor();
+    initCursorTrail();
     initGlassLighting();
-    initSakura();
+    initLeaves();
     initCustomModel();
     initSpinnerButtons();
+    initTooltips();
 }
 
 document.addEventListener('DOMContentLoaded', init);

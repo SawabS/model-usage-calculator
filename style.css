@@ -526,7 +526,7 @@ main {
     max-height: 240px;
     border: 1px solid var(--glass-border);
     border-top: none;
-    margin-top: -1px;
+    margin-top: 0.35rem;
 }
 .model-dropdown::-webkit-scrollbar {
     width: 4px;
